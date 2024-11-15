@@ -3,20 +3,20 @@ import tkinter as tk
 from tkinter import messagebox
 import webbrowser
 
-# ========== উপাদানসমূহ এবং তাদের পরিমাণ ========== #
+# ========== উপাদানসমূহ এবং তাদের বর্তমান মূল্য ========== #
 ingredients = {
-    "চাল": "১ কাপ",
-    "মাংস": "২০০ গ্রাম",
-    "সবজি": "৩০০ গ্রাম",
-    "ডাল": "১ কাপ",
-    "দই": "২ চামচ",
-    "টমেটো": "২টি",
-    "পেঁয়াজ": "১টি",
-    "রসুন": "৩ কোয়া",
-    "মশলা": "১ চামচ",
-    "নুন": "স্বাদ অনুযায়ী",
-    "চিনি": "১ চামচ",
-    "আলু": "২টি"
+    "চাল": {"quantity": "১ কাপ", "price_per_unit": 40, "calories_per_unit": 200},
+    "মাংস": {"quantity": "২০০ গ্রাম", "price_per_unit": 150, "calories_per_unit": 300},
+    "সবজি": {"quantity": "৩০০ গ্রাম", "price_per_unit": 50, "calories_per_unit": 80},
+    "ডাল": {"quantity": "১ কাপ", "price_per_unit": 35, "calories_per_unit": 150},
+    "দই": {"quantity": "২ চামচ", "price_per_unit": 30, "calories_per_unit": 20},
+    "টমেটো": {"quantity": "২টি", "price_per_unit": 20, "calories_per_unit": 15},
+    "পেঁয়াজ": {"quantity": "১টি", "price_per_unit": 12, "calories_per_unit": 10},
+    "রসুন": {"quantity": "৩ কোয়া", "price_per_unit": 8, "calories_per_unit": 5},
+    "মশলা": {"quantity": "১ চামচ", "price_per_unit": 8, "calories_per_unit": 10},
+    "নুন": {"quantity": "স্বাদ অনুযায়ী", "price_per_unit": 4, "calories_per_unit": 0},
+    "চিনি": {"quantity": "১ চামচ", "price_per_unit": 8, "calories_per_unit": 20},
+    "আলু": {"quantity": "২টি", "price_per_unit": 16, "calories_per_unit": 50}
 }
 
 # ========== রান্নার পদ্ধতি ========== #
@@ -77,6 +77,13 @@ cooking_time = {
     "মুরগির মাংস": {"time": "৪৫ মিনিট", "temperature": "মাঝারি তাপ"}
 }
 
+# ========== উপাদানের খরচ দেখান ========== #
+def show_ingredient_prices():
+    prices_text = "বর্তমান বাজার অনুযায়ী উপাদানের মূল্য:\n\n"
+    for item, details in ingredients.items():
+        prices_text += f"{item} ({details['quantity']}): {details['price_per_unit']} টাকা\n"
+    return prices_text
+
 # ========== ভিডিও URL (Web Browser) ========== #
 video_urls = {
     "পোলাও": "https://youtu.be/OQWCirmPotc?t=3",
@@ -89,24 +96,60 @@ video_urls = {
 }
 
 # ========== রান্নার প্রক্রিয়া ========== #
-def generate_recipe(dish_choice):
+def generate_recipe(dish_choice, servings):
     dish = dish_choice
-    selected_ingredients = random.sample(list(ingredients.keys()), 4)
-    selected_ingredients_with_quantity = [f"{ingredient} ({ingredients[ingredient]})" for ingredient in selected_ingredients]
+    
+    # Get the specific ingredients for the selected dish
+    if dish == "পোলাও":
+        selected_ingredients = ["চাল", "মাংস", "পেঁয়াজ", "মশলা"]
+    elif dish == "বিরিয়ানি":
+        selected_ingredients = ["চাল", "মাংস", "পেঁয়াজ", "মশলা"]
+    elif dish == "খিচুড়ি":
+        selected_ingredients = ["চাল", "ডাল", "পেঁয়াজ", "মশলা"]
+    elif dish == "সবজি তরকারি":
+        selected_ingredients = ["সবজি", "পেঁয়াজ", "রসুন", "মশলা"]
+    elif dish == "ডাল ভাত":
+        selected_ingredients = ["চাল", "ডাল", "পেঁয়াজ", "মশলা"]
+    elif dish == "গরুর মাংস":
+        selected_ingredients = ["মাংস", "পেঁয়াজ", "রসুন", "মশলা"]
+    elif dish == "মুরগির মাংস":
+        selected_ingredients = ["মাংস", "পেঁয়াজ", "রসুন", "মশলা"]
+# মোট খরচ ও ক্যালোরি কাউন্টার হিসাব করার ফাংশন
+  
+    # Adjust quantities based on servings
+    selected_ingredients_with_quantity = []
+    total_cost = 0
+    total_calories = 0
+
+    for ingredient in selected_ingredients:
+        ingredient_quantity = ingredients[ingredient]["quantity"]
+        price_per_unit = ingredients[ingredient]["price_per_unit"]
+        calories_per_unit = ingredients[ingredient]["calories_per_unit"]
+        # Adjusting ingredient quantities based on servings
+        adjusted_quantity = f"{int(servings)}x {ingredient_quantity}"
+        selected_ingredients_with_quantity.append(f"{ingredient} ({adjusted_quantity})")
+        total_calories += calories_per_unit * servings
+        total_cost += price_per_unit * servings
+
     method = random.choice(cooking_methods)
     time = cooking_time[dish]["time"]
     temperature = cooking_time[dish]["temperature"]
     steps = cooking_steps[dish]
+    
     recipe = f"🔸 আজকের রেসিপি: {dish}\n\n" \
-             f"🔹 উপাদানসমূহ:\n" + "\n".join([f"- {ingredient}" for ingredient in selected_ingredients_with_quantity]) + "\n\n" \
+             f"🔹 উপাদানসমূহ:\n" + "\n".join([f"- {ingredient}" for ingredient in selected_ingredients_with_quantity]) + "\n" \
+             f"🔸🔸🔸 উপাদানের পরিমান {servings} জন মানুষের হিসাব অনুযায়ি পরিমান মত দিতে হবে\n\n\n" \
              f"🔹 রান্নার পদ্ধতি: {method}\n" \
              f"🔹 রান্নার সময়: {time}\n" \
              f"🔹 রান্নার তাপমাত্রা: {temperature}\n\n" \
-             f"🔸 রান্নার ধাপসমূহ:\n"
-            
+             f"🔸 রান্নার ধাপসমূহ:\n"\
+             
     for idx, step in enumerate(steps, 1):
         recipe += f"{idx}. {step}\n"
-        
+
+    # Add total cost
+    recipe += f"\n🔸 মোট খরচ: {total_cost} টাকা\n"
+    recipe += f"🔸 মোট ক্যালোরি: {total_calories} ক্যালোরি\n"
     return recipe
 
 # ========== ভিডিও চালানোর প্রক্রিয়া ========== #
@@ -120,12 +163,19 @@ def play_video(dish_choice):
 # ========== GUI তৈরি ========== #
 def show_recipe():
     selected_dish = dish_var.get()  
+    servings = servings_entry.get()
+    
+    if not servings.isdigit() or int(servings) <= 0:
+        messagebox.showwarning("Warning", "অনুগ্রহ করে সঠিক সংখ্যা দিন!")
+        return
+    
+    servings = int(servings)
     
     if selected_dish == "":
         messagebox.showwarning("Warning", "অনুগ্রহ করে একটি খাবার নির্বাচন করুন!")
         return
 
-    recipe = generate_recipe(selected_dish)
+    recipe = generate_recipe(selected_dish, servings)
     
     recipe_text.delete(1.0, tk.END)
     recipe_text.insert(tk.END, recipe)
@@ -133,13 +183,17 @@ def show_recipe():
     # Show the video button after recipe is generated
     video_button.pack(pady=5)
 
+def show_prices():
+    prices_info = show_ingredient_prices()
+    messagebox.showinfo("উপাদানের মূল্য তালিকা", prices_info)
+
 # ========== Tkinter GUI সেটআপ ========== #
 root = tk.Tk()
 root.title("খাদ্য রেসিপি জেনারেটর")
-root.geometry("500x600")
+root.geometry("500x700")
 root.configure(bg="#f7e8c8")
 
-# ========== স্টাইলিং ========== #
+# GUI Elements
 title_label = tk.Label(root, text="রেসিপি তৈরি", font=("Arial", 16, "bold"), fg="#4a403a", bg="#f7e8c8")
 title_label.pack(pady=10)
 
@@ -151,15 +205,21 @@ dish_menu = tk.OptionMenu(root, dish_var, "পোলাও", "বিরিয়া
 dish_menu.configure(bg="#b4a7a1", fg="black", font=("Arial", 10))
 dish_menu.pack(pady=5)
 
+servings_label = tk.Label(root, text="কতজন মানুষের জন্য?", font=("Arial", 12, "bold"), fg="#4a403a", bg="#f7e8c8")
+servings_label.pack(pady=5)
+
+servings_entry = tk.Entry(root, font=("Arial", 12), width=10)
+servings_entry.pack(pady=5)
+
 generate_button = tk.Button(root, text="রেসিপি তৈরি করুন", command=show_recipe, font=("Arial", 12, "bold"), bg="#d4a373", fg="white", activebackground="#d49973")
 generate_button.pack(pady=15)
 
-# Initially hide the video button
-video_button = tk.Button(root, text="ভিডিও দেখুন", command=lambda: play_video(dish_var.get()), font=("Arial", 12, "bold"), bg="#d4a373", fg="white")
-# Do not pack it yet
+# New Button to Show Prices
+prices_button = tk.Button(root, text="উপাদানের মূল্য দেখুন", command=show_prices, font=("Arial", 12, "bold"), bg="#d4a373", fg="white")
+prices_button.pack(pady=5)
 
+video_button = tk.Button(root, text="ভিডিও দেখুন", command=lambda: play_video(dish_var.get()), font=("Arial", 12, "bold"), bg="#d4a373", fg="white")
 recipe_text = tk.Text(root, width=50, height=18, font=("Arial", 10, "bold"), wrap="word", bg="#fffaf0", fg="#4a403a")
 recipe_text.pack(padx=20, pady=10)
 
-# ========== Tkinter GUI চালু ========== #
 root.mainloop()

@@ -1,125 +1,122 @@
 import random
 import tkinter as tk
 from tkinter import messagebox
+import webbrowser
 
-# ========== Ingredients and Their Quantities ========== #
+# Data for ingredients, recipes, and videos
 ingredients = {
-    "Rice": "1 cup",
-    "Meat": "200 grams",
-    "Vegetables": "300 grams",
-    "Lentils": "1 cup",
-    "Yogurt": "2 tablespoons",
-    "Tomato": "2 pieces",
-    "Onion": "1 piece",
-    "Garlic": "3 cloves",
-    "Spices": "1 tablespoon",
-    "Salt": "To taste",
-    "Sugar": "1 tablespoon",
-    "Potato": "2 pieces"
+    "Rice": {"quantity": "1 cup", "price_per_unit": 40, "calories_per_unit": 200},
+    "Meat": {"quantity": "200g", "price_per_unit": 150, "calories_per_unit": 300},
+    "Vegetables": {"quantity": "300g", "price_per_unit": 50, "calories_per_unit": 80},
+    "Lentils": {"quantity": "1 cup", "price_per_unit": 35, "calories_per_unit": 150},
+    "Onion": {"quantity": "1 pc", "price_per_unit": 12, "calories_per_unit": 10},
+    "Spices": {"quantity": "1 tbsp", "price_per_unit": 8, "calories_per_unit": 10},
 }
 
-# ========== Cooking Methods ========== #
-cooking_methods = [
-    "Fried", "Boiled", "Fried in oil", "Kebab", "Cooked with onions", "Cooking mix"
-]
-
-# ========== Cooking Steps ========== #
 cooking_steps = {
-    "Pulao": [
-        "Wash the rice and let it sit in water for 20 minutes.",
-        "Chop the onions and meat.",
-        "Heat oil, then fry the meat and onions.",
+    "Pilaf": [
+        "Rinse rice and soak for 20 minutes.",
+        "Chop onion and meat.",
+        "Heat oil, add meat and onion, and fry.",
         "Add rice, spices, water, and cook."
     ],
     "Biryani": [
-        "Wash the rice and soak in water for 30 minutes.",
-        "Chop the meat, spices, and onions.",
-        "Marinate the meat with spices for some time.",
-        "Add rice, meat, and spices together and cook."
-    ],
-    "Rice": [
-        "Wash the rice and soak in water for 15 minutes.",
-        "Boil water, add rice, and cook until done."
-    ],
-    "Vegetable Curry": [
-        "Chop the vegetables.",
-        "Fry onions, garlic, and spices in oil.",
-        "Add vegetables and cook for a while."
-    ],
-    "Lentil and Rice": [
-        "Cook the lentils until boiled.",
-        "Cook the rice.",
-        "Make a gravy with the lentils and hot spices."
+        "Rinse rice and soak for 30 minutes.",
+        "Marinate meat with spices.",
+        "Cook meat with onion and tomatoes.",
+        "Layer rice and meat, then cook on low heat."
     ]
 }
 
-# ========== Cooking Time and Temperature ========== #
 cooking_time = {
-    "Pulao": {"time": "30 minutes", "temperature": "Medium heat"},
-    "Biryani": {"time": "45 minutes", "temperature": "Medium heat"},
-    "Rice": {"time": "20 minutes", "temperature": "Medium heat"},
-    "Vegetable Curry": {"time": "25 minutes", "temperature": "Medium heat"},
-    "Lentil and Rice": {"time": "30 minutes", "temperature": "Medium heat"}
+    "Pilaf": {"time": "30 minutes", "temperature": "Medium heat"},
+    "Biryani": {"time": "45 minutes", "temperature": "Low heat"}
 }
 
-# ========== Recipe Generation ========== #
-def generate_recipe(dish_choice):
-    dish = dish_choice
-    selected_ingredients = random.sample(list(ingredients.keys()), 4)
-    selected_ingredients_with_quantity = [f"{ingredient} ({ingredients[ingredient]})" for ingredient in selected_ingredients]
-    method = random.choice(cooking_methods)
-    time = cooking_time[dish]["time"]
-    temperature = cooking_time[dish]["temperature"]
-    steps = cooking_steps[dish]
-    recipe = f"🔸 Today's Recipe: {dish}\n\n" \
-             f"🔹 Ingredients:\n" + "\n".join([f"- {ingredient}" for ingredient in selected_ingredients_with_quantity]) + "\n\n" \
-             f"🔹 Cooking Method: {method}\n" \
-             f"🔹 Cooking Time: {time}\n" \
-             f"🔹 Cooking Temperature: {temperature}\n\n" \
-             f"🔸 Steps:\n"
-              
-    for idx, step in enumerate(steps, 1):
-        recipe += f"{idx}. {step}\n"
-        
+video_urls = {
+    "Pilaf": "https://youtu.be/OQWCirmPotc",
+    "Biryani": "https://youtu.be/v-55n1M05IE"
+}
+
+# Functions for recipe generation and GUI actions
+def show_ingredient_prices():
+    prices_text = "Ingredient Prices:\n\n"
+    for item, details in ingredients.items():
+        prices_text += f"{item} ({details['quantity']}): {details['price_per_unit']} Taka\n"
+    return prices_text
+
+def generate_recipe(dish, servings):
+    selected_ingredients = {
+        "Pilaf": ["Rice", "Meat", "Onion", "Spices"],
+        "Biryani": ["Rice", "Meat", "Onion", "Spices"]
+    }.get(dish, [])
+
+    ingredients_list = []
+    total_cost = total_calories = 0
+
+    for ingredient in selected_ingredients:
+        data = ingredients[ingredient]
+        cost = data["price_per_unit"] * servings
+        calories = data["calories_per_unit"] * servings
+        ingredients_list.append(f"{ingredient} ({data['quantity']})")
+        total_cost += cost
+        total_calories += calories
+
+    recipe = f"Recipe for {dish}:\n\nIngredients:\n" + "\n".join(ingredients_list)
+    recipe += f"\n\nCooking Steps:\n" + "\n".join(cooking_steps[dish])
+    recipe += f"\n\nTime: {cooking_time[dish]['time']}, Temp: {cooking_time[dish]['temperature']}"
+    recipe += f"\n\nTotal Cost: {total_cost} Taka\nTotal Calories: {total_calories} kcal"
     return recipe
 
-# ========== GUI Creation ========== #
 def show_recipe():
-    selected_dish = dish_var.get()  
-    
-    if selected_dish == "":
-        messagebox.showwarning("Warning", "Please select a dish!")
-        return
-    
-    recipe = generate_recipe(selected_dish)
-    
-    recipe_text.delete(1.0, tk.END)
-    recipe_text.insert(tk.END, recipe)
+    dish = dish_var.get()
+    try:
+        servings = int(servings_entry.get())
+        if servings <= 0:
+            raise ValueError
+        recipe = generate_recipe(dish, servings)
+        recipe_text.delete(1.0, tk.END)
+        recipe_text.insert(tk.END, recipe)
+        video_button.pack()
+    except ValueError:
+        messagebox.showerror("Invalid Input", "Enter a valid number of servings.")
 
-# ========== Tkinter GUI Setup ========== #
+def show_prices():
+    messagebox.showinfo("Ingredient Prices", show_ingredient_prices())
+
+def play_video():
+    dish = dish_var.get()
+    url = video_urls.get(dish)
+    if url:
+        webbrowser.open(url)
+    else:
+        messagebox.showerror("Error", "Video not available.")
+
+# GUI Setup
 root = tk.Tk()
-root.title("Food Recipe Generator")
-root.geometry("500x500")
-root.configure(bg="#f7e8c8")
+root.title("Recipe Generator")
+root.geometry("500x600")
 
-# ========== Styling ========== #
-title_label = tk.Label(root, text="Food Recipe Generator", font=("Arial", 16, "bold"), fg="#4a403a", bg="#f7e8c8")
+title_label = tk.Label(root, text="Food Recipe Generator", font=("Arial", 16, "bold"))
 title_label.pack(pady=10)
 
-dish_label = tk.Label(root, text="Select a Dish Type:", font=("Arial", 12, "bold"), fg="#4a403a", bg="#f7e8c8")
-dish_label.pack(pady=5)
-
 dish_var = tk.StringVar()
-dish_menu = tk.OptionMenu(root, dish_var, "Pulao", "Biryani", "Rice", "Vegetable Curry", "Lentil and Rice")
-dish_menu.configure(bg="#b4a7a1", fg="black", font=("Arial", 10))
-dish_menu.pack(pady=5)
+dish_menu = tk.OptionMenu(root, dish_var, "Pilaf", "Biryani")
+dish_menu.pack(pady=10)
 
-generate_button = tk.Button(root, text="Generate Recipe", command=show_recipe, font=("Arial", 12, "bold"), 
-                            bg="#d4a373", fg="white", activebackground="#d49973")
-generate_button.pack(pady=15)
+servings_entry = tk.Entry(root, width=10)
+servings_entry.pack(pady=5)
+servings_entry.insert(0, "Servings")
 
-recipe_text = tk.Text(root, width=50, height=18, font=("Arial", 10, "bold"), wrap="word", bg="#fffaf0", fg="#4a403a")
-recipe_text.pack(padx=20, pady=10)
+generate_button = tk.Button(root, text="Generate Recipe", command=show_recipe)
+generate_button.pack(pady=10)
 
-# ========== Tkinter GUI Execution ========== #
+price_button = tk.Button(root, text="Show Ingredient Prices", command=show_prices)
+price_button.pack(pady=5)
+
+recipe_text = tk.Text(root, wrap="word", height=15)
+recipe_text.pack(pady=10)
+
+video_button = tk.Button(root, text="Watch Video", command=play_video)
+
 root.mainloop()
